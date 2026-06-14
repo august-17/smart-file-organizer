@@ -2,10 +2,10 @@ import os
 import tkinter as tk
 from tkinter import filedialog
 
-root = tk.Tk()                                      # Create the root window
-root.withdraw()                                     # Hide the root window
+root = tk.Tk()                                          # Create the root window
+root.withdraw()                                         # Hide the root window
 
-folder_path = filedialog.askdirectory()             # Open a dialog to select a folder and store its path
+folder_path = filedialog.askdirectory()                 # Open a dialog to select a folder and store its path
 
 if not folder_path:
     
@@ -26,11 +26,21 @@ file_types = {
     "Videos": [".mp4", ".mkv", ".avi", ".mov", ".webm"],
     "Audio": [".mp3", ".wav", ".aac", ".m4a"],
     "Archives": [".zip", ".rar", ".tar", ".gz", ".7z"],
+    "Others": []
 }
+
+for category in file_types:
+
+    folder_to_create = os.path.join(folder_path, category)
+
+    if not os.path.exists(folder_to_create):
+
+        os.mkdir(folder_to_create)
+        print(f"Created folder: {category}")
 
 for item in os.listdir(folder_path):
     
-    item_path = os.path.join(folder_path, item)
+    item_path = os.path.join(folder_path, item)         # Create the complete path of the current item
 
     if os.path.isfile(item_path):
         
@@ -43,5 +53,5 @@ for item in os.listdir(folder_path):
             if extension in extensions:
                category = folder_name
                break
-        print(item, "->", category)
+        
 
