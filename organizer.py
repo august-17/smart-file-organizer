@@ -1,11 +1,17 @@
 import os
+import tkinter as tk
+from tkinter import filedialog
 
-downloads_folder = os.path.expanduser("~/Downloads")
+root = tk.Tk()                              # Create the root window
+root.withdraw()                             # Hide the root window
 
-print("Downloads Folder:")
-print(downloads_folder)
+folder_path = filedialog.askdirectory()     # Open a dialog to select a folder and store its path
 
-print("\nFiles in Downloads:")
+if not folder_path:
+    print("No folder selected.")
+    exit()
 
-for item in os.listdir(downloads_folder):
+print("Selected:", folder_path)
+
+for item in os.listdir(folder_path):        # List all items in the selected folder
     print(item)
