@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import filedialog
+import shutil
 
 root = tk.Tk()                                          # Create the root window
 root.withdraw()                                         # Hide the root window
@@ -53,5 +54,6 @@ for item in os.listdir(folder_path):
             if extension in extensions:
                category = folder_name
                break
-        
 
+        destination_folder = os.path.join(folder_path, category)
+        shutil.move(item_path, destination_folder)
