@@ -8,22 +8,40 @@ root.withdraw()                                     # Hide the root window
 folder_path = filedialog.askdirectory()             # Open a dialog to select a folder and store its path
 
 if not folder_path:
+    
     print("No folder selected.")
     exit()
 
+if not os.listdir(folder_path):
+    print("Selected folder is empty.")
+    exit()
+
 print("Selected:", folder_path)
+print("Organizing files...")
+print()
 
-for item in os.listdir(folder_path):                # List all items in the selected folder
+file_types = {
+    "Images": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"],
+    "Documents": [".pdf", ".txt", ".docx", ".doc", ".xlsx", ".pptx", ".csv"],
+    "Videos": [".mp4", ".mkv", ".avi", ".mov", ".webm"],
+    "Audio": [".mp3", ".wav", ".aac", ".m4a"],
+    "Archives": [".zip", ".rar", ".tar", ".gz", ".7z"],
+}
 
+for item in os.listdir(folder_path):
+    
     item_path = os.path.join(folder_path, item)
 
     if os.path.isfile(item_path):
-       
-       file_name, extension = os.path.splitext(item)
-       
-       print("File Name:", file_name)
-       print("Extension:", extension)
-       print("-" * 25)
+        
+        file_name, extension = os.path.splitext(item)
+        extension = extension.lower()
+        category = "Others"
 
-    else:
-        print(item, "-> Folder")
+        for folder_name, extensions in file_types.items():
+        
+            if extension in extensions:
+               category = folder_name
+               break
+        print(item, "->", category)
+
