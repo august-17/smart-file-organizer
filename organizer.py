@@ -1,11 +1,11 @@
 import os
 
-curr_folder = os.getcwd()
+downloads_folder = os.path.expanduser("~/Downloads")
 
-print("Current Folder:")
-print(curr_folder)
+print("Downloads Folder:")
+print(downloads_folder)
 
-print("\nFiles and Folders:")
+print("\nFiles in Downloads:")
 
-for item in os.listdir(curr_folder):
+for item in os.listdir(downloads_folder):
     print(item)
