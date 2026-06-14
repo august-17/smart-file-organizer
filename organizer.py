@@ -57,7 +57,23 @@ for item in os.listdir(folder_path):
 
         destination_folder = os.path.join(folder_path, category)
         destination_path = os.path.join(destination_folder, item)
-        if os.path.exists(destination_path):
-            print("Duplicate found:", item)
-        else:
-            print("No duplicate:", item)
+        counter = 1
+
+        while os.path.exists(destination_path):
+
+            print("File already exists:", os.path.basename(destination_path))
+
+            new_name = f"{file_name}_{counter}{extension}"
+            destination_path = os.path.join(destination_folder, new_name)
+
+            print("Trying:", new_name)
+            counter += 1
+
+        if counter > 1:
+            print(f"\nRenamed {item} -> {os.path.basename(destination_path)}")
+
+        try:
+            shutil.move(item_path, destination_path)
+
+        except Exception as e:
+            print(f"Error moving {item}: {e}")
