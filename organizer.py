@@ -13,6 +13,7 @@ if not folder_path:
     print("No folder selected.")
     exit()
 
+
 if not os.listdir(folder_path):
     print("Selected folder is empty.")
     exit()
@@ -37,7 +38,8 @@ for category in file_types:
     if not os.path.exists(folder_to_create):
 
         os.mkdir(folder_to_create)
-        print(f"Created folder: {category}")
+
+files_moved = 0
 
 for item in os.listdir(folder_path):
     
@@ -57,9 +59,13 @@ for item in os.listdir(folder_path):
 
         destination_folder = os.path.join(folder_path, category)
         destination_path = os.path.join(destination_folder, item)
+        
         counter = 1
+        renamed = False
 
         while os.path.exists(destination_path):
+
+            renamed = True
 
             print("File already exists:", os.path.basename(destination_path))
 
@@ -69,11 +75,18 @@ for item in os.listdir(folder_path):
             print("Trying:", new_name)
             counter += 1
 
-        if counter > 1:
-            print(f"\nRenamed {item} -> {os.path.basename(destination_path)}")
+        print()
+
+        if renamed:
+            print(f"\nRenamed: {item} -> {os.path.basename(destination_path)}")
+
 
         try:
             shutil.move(item_path, destination_path)
+            files_moved += 1
 
         except Exception as e:
             print(f"Error moving {item}: {e}")
+
+
+print(f"\nOrganization complete! {files_moved} file(s) moved.")
