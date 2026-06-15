@@ -176,9 +176,11 @@ def create_summary(category_count, files_moved):
 
 def write_log_file(folder_path, log_entries, summary):
 
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
     log_path = os.path.join(
         folder_path,
-        "organizer_log.txt"
+        f"organizer_log_{timestamp}.txt"
     )
 
     with open(log_path, "w", encoding="utf-8") as log_file:
