@@ -24,6 +24,8 @@ file_types = {
     "Videos": [".mp4", ".mkv", ".avi", ".mov", ".webm"],
     "Audio": [".mp3", ".wav", ".aac", ".m4a"],
     "Archives": [".zip", ".rar", ".tar", ".gz", ".7z", ".tar.gz", ".tar.bz2", ".tar.xz"],
+    "Code": [".py", ".java", ".class", ".cpp", ".hpp", ".c", ".h", ".js", ".jsx", ".html", ".css", ".json", ".xml", ".yml", ".yaml", ".ts", ".tsx", ".go", ".rb", ".php", ".jar", ".ipynb", ".mat", ".sql", ".r", ".swift", ".cs", ".rs", ".kt", ".scala", ".lua", ".vue"],
+    "Executables": [".exe", ".msi", ".bat", ".sh", ".app", ".apk", ".dmg", ".cmd", ".com", ".bin"],
     "Others": []
 }
 
