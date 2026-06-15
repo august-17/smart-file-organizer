@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import shutil
 
 root = tk.Tk()                                          # Create the root window
@@ -10,12 +10,19 @@ folder_path = filedialog.askdirectory()                 # Open a dialog to selec
 
 if not folder_path:
     
-    print("No folder selected.")
+    messagebox.showwarning(
+        "Smart File Organizer",
+        "No folder selected."
+    )
     exit()
 
 
 if not os.listdir(folder_path):
-    print("Selected folder is empty.")
+
+    messagebox.showinfo(
+        "Smart File Organizer",
+        "Selected folder is empty."
+    )
     exit()
 
 print("Selected:", folder_path)
@@ -134,11 +141,18 @@ for item in os.listdir(folder_path):
             print(f"Error moving {item}: {e}")
 
 
-print("\nOrganization complete!\n")
+summary = "Organization complete!\n\n"
 
 for category, count in category_count.items():
 
     if count > 0:
-        print(f"{category}: {count}")
+        summary += f"{category}: {count}\n"
 
-print(f"\nTotal: {files_moved} file(s) moved.")
+summary += f"\nTotal: {files_moved} file(s) moved."
+
+print("\n" + summary)
+
+messagebox.showinfo(
+    "Smart File Organizer",
+    summary
+)
