@@ -90,9 +90,13 @@ def get_unique_destination(destination_folder, file_name, extension, item):
 
 
 
-
-
 files_moved = 0
+
+category_count = {}
+
+for category in file_types:
+    category_count[category] = 0
+
 
 for item in os.listdir(folder_path):
     
@@ -123,10 +127,18 @@ for item in os.listdir(folder_path):
             
             shutil.move(item_path, destination_path)
             files_moved += 1
+            category_count[category] += 1
 
         except Exception as e:
             
             print(f"Error moving {item}: {e}")
 
 
-print(f"Organization complete! {files_moved} file(s) moved.")         # Display a summary after all files have been processed
+print("\nOrganization complete!\n")
+
+for category, count in category_count.items():
+
+    if count > 0:
+        print(f"{category}: {count}")
+
+print(f"\nTotal: {files_moved} file(s) moved.")
