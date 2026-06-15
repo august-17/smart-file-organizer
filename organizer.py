@@ -4,6 +4,8 @@ from tkinter import filedialog, messagebox
 from datetime import datetime
 import shutil
 
+LOG_FILE_PREFIX = "organizer_log_"
+
 
 
 def create_hidden_root():
@@ -108,6 +110,10 @@ def organize_files(folder_path, file_types):
 
 
     for item in os.listdir(folder_path):
+
+        # Skip organizer log files
+        if item.startswith(LOG_FILE_PREFIX):
+            continue
     
         item_path = os.path.join(folder_path, item)                             # Create the complete path of the current item
 
@@ -180,7 +186,7 @@ def write_log_file(folder_path, log_entries, summary):
 
     log_path = os.path.join(
         folder_path,
-        f"organizer_log_{timestamp}.txt"
+        f"{LOG_FILE_PREFIX}{timestamp}.txt"
     )
 
     with open(log_path, "w", encoding="utf-8") as log_file:
