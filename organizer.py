@@ -6,6 +6,8 @@ import shutil
 
 LOG_FILE_PREFIX = "organizer_log_"
 
+MULTI_EXTENSIONS = [".tar.gz", ".tar.bz2", ".tar.xz"]
+
 
 
 def create_hidden_root():
@@ -21,7 +23,7 @@ file_types = {
     "Documents": [".pdf", ".txt", ".docx", ".doc", ".xlsx", ".pptx", ".csv"],
     "Videos": [".mp4", ".mkv", ".avi", ".mov", ".webm"],
     "Audio": [".mp3", ".wav", ".aac", ".m4a"],
-    "Archives": [".zip", ".rar", ".tar", ".gz", ".7z"],
+    "Archives": [".zip", ".rar", ".tar", ".gz", ".7z", ".tar.gz", ".tar.bz2", ".tar.xz"],
     "Others": []
 }
 
@@ -61,6 +63,22 @@ def get_category(extension, file_types):
             break
 
     return category
+
+
+
+def get_file_extension(filename):
+
+    lower_filename = filename.lower()
+
+    for extension in MULTI_EXTENSIONS:
+
+        if lower_filename.endswith(extension):
+
+            file_name = filename[:-len(extension)]
+
+            return file_name, extension
+
+    return os.path.splitext(filename)
 
 
 
@@ -119,7 +137,7 @@ def organize_files(folder_path, file_types):
 
         if os.path.isfile(item_path):
         
-            file_name, extension = os.path.splitext(item)                       # Split the filename into name and extension
+            file_name, extension = get_file_extension(item)                     # Split the filename into name and extension
             extension = extension.lower()
         
             category = get_category(extension, file_types)                      # Get the category for the file based on its extension
@@ -234,16 +252,13 @@ def main():
     files_moved, category_count, log_entries = organize_files(folder_path, file_types)
 
     if files_moved == 0:
-
         message = "No files found to organize."
-
         print("\n" + message)
 
         messagebox.showinfo(
             "Smart File Organizer",
             message
         )
-
         return
     
 
