@@ -232,6 +232,19 @@ def main():
     create_category_folders(folder_path, file_types)
 
     files_moved, category_count, log_entries = organize_files(folder_path, file_types)
+
+    if files_moved == 0:
+
+        message = "No files found to organize."
+
+        print("\n" + message)
+
+        messagebox.showinfo(
+            "Smart File Organizer",
+            message
+        )
+
+        return
     
 
     summary = create_summary(
