@@ -5,6 +5,14 @@ import shutil
 
 
 
+def create_hidden_root():
+
+    root = tk.Tk()                          # Create the root window
+    root.withdraw()                         # Hide the root window
+
+    return root
+
+
 file_types = {
     "Images": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"],
     "Documents": [".pdf", ".txt", ".docx", ".doc", ".xlsx", ".pptx", ".csv"],
@@ -16,7 +24,7 @@ file_types = {
 
 
 
-def create_category_folders(folder_path):
+def create_category_folders(folder_path, file_types):
 
     # Create category folders if they don't exist
     for category in file_types:
@@ -29,7 +37,16 @@ def create_category_folders(folder_path):
 
 
 
-def get_category(extension):
+def initialize_category_count(file_types):
+
+    return {
+        category: 0
+        for category in file_types
+    }
+
+
+
+def get_category(extension, file_types):
 
     category = "Others"
 
@@ -66,11 +83,65 @@ def get_unique_destination(destination_folder, file_name, extension, item):
         messages.append(
             f"Trying: {new_name}"
         )
-        print()
 
         counter += 1
 
     return destination_path, renamed, messages
+
+
+def print_messages(messages):
+
+    for message in messages:
+        print(message)
+
+    if messages:
+        print()
+
+
+
+def organize_files(folder_path, file_types):
+
+    files_moved = 0
+    category_count = initialize_category_count(file_types)
+
+
+    for item in os.listdir(folder_path):
+    
+        item_path = os.path.join(folder_path, item)                 # Create the complete path of the current item
+
+        if os.path.isfile(item_path):
+        
+            file_name, extension = os.path.splitext(item)           # Split the filename into name and extension
+            extension = extension.lower()
+        
+            category = get_category(extension, file_types)                      # Get the category for the file based on its extension
+
+            destination_folder = os.path.join(folder_path, category)
+
+            destination_path, renamed, messages = get_unique_destination(
+                destination_folder,
+                file_name,
+                extension,
+                item
+            )
+
+            print_messages(messages)
+
+            if renamed:                                             # Display the final renamed filename if a duplicate was found
+            
+                print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
+                print()
+
+            try:                                                    # Move the file and continue even if one file causes an error
+                shutil.move(item_path, destination_path)
+
+                files_moved += 1
+                category_count[category] += 1
+
+            except Exception as e:
+                print(f"Error moving {item}: {e}")
+
+    return files_moved, category_count
 
 
 
@@ -91,11 +162,9 @@ def create_summary(category_count, files_moved):
 
 def main():
 
-    root = tk.Tk()                                          # Create the root window
-    root.withdraw()                                         # Hide the root window
+    create_hidden_root()
 
     folder_path = filedialog.askdirectory()                 # Open a dialog to select a folder and store its path
-
 
 
     if not folder_path:
@@ -103,74 +172,24 @@ def main():
             "Smart File Organizer",
             "No folder selected."
         )
-        exit()
+        return
 
     if not os.listdir(folder_path):
         messagebox.showinfo(                                # Display an info message if the selected folder is empty   
             "Smart File Organizer",
             "Selected folder is empty."
         )
-        exit()
+        return
 
     print("Selected:", folder_path)
     print("Organizing files...")
     print()
 
 
+    # Create category folders before moving files
+    create_category_folders(folder_path, file_types)
 
-    #Create category folders before moving files
-    create_category_folders(folder_path)
-
-    files_moved = 0
-    category_count = {}
-    category_count = {
-        category: 0
-        for category in file_types
-    }
-
-
-
-    for item in os.listdir(folder_path):
-    
-        item_path = os.path.join(folder_path, item)                 # Create the complete path of the current item
-
-        if os.path.isfile(item_path):
-        
-            file_name, extension = os.path.splitext(item)           # Split the filename into name and extension
-            extension = extension.lower()
-        
-            category = get_category(extension)                      # Get the category for the file based on its extension
-
-            destination_folder = os.path.join(folder_path, category)
-
-            destination_path, renamed, messages = get_unique_destination(
-                destination_folder,
-                file_name,
-                extension,
-                item
-            )
-
-            for message in messages:
-                print(message)
-
-            if messages:
-                print()
-
-            if renamed:                                             # Display the final renamed filename if a duplicate was found
-            
-                print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
-                print()
-
-            try:                                                    # Move the file and continue even if one file causes an error
-                shutil.move(item_path, destination_path)
-                
-                files_moved += 1
-                category_count[category] += 1
-
-            except Exception as e:
-                print(f"Error moving {item}: {e}")
-
-
+    files_moved, category_count = organize_files(folder_path, file_types)
 
     summary = create_summary(
         category_count,
