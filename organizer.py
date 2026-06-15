@@ -50,22 +50,27 @@ def get_unique_destination(destination_folder, file_name, extension, item):
 
     counter = 1
     renamed = False
+    messages = []
 
     # Generate a new filename if a file with the same name already exists in the destination folder
     while os.path.exists(destination_path):
 
         renamed = True
-        print("File already exists:", os.path.basename(destination_path))
+        messages.append(
+            f"File already exists: {os.path.basename(destination_path)}"
+        )
 
         new_name = f"{file_name}_{counter}{extension}"
         destination_path = os.path.join(destination_folder, new_name)
 
-        print("Trying:", new_name)
+        messages.append(
+            f"Trying: {new_name}"
+        )
         print()
 
         counter += 1
 
-    return destination_path, renamed
+    return destination_path, renamed, messages
 
 
 
@@ -137,12 +142,19 @@ def main():
             category = get_category(extension)                      # Get the category for the file based on its extension
 
             destination_folder = os.path.join(folder_path, category)
-            destination_path, renamed = get_unique_destination(
+
+            destination_path, renamed, messages = get_unique_destination(
                 destination_folder,
                 file_name,
                 extension,
                 item
             )
+
+            for message in messages:
+                print(message)
+
+            if messages:
+                print()
 
             if renamed:                                             # Display the final renamed filename if a duplicate was found
             
@@ -151,6 +163,7 @@ def main():
 
             try:                                                    # Move the file and continue even if one file causes an error
                 shutil.move(item_path, destination_path)
+                
                 files_moved += 1
                 category_count[category] += 1
 
