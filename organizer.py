@@ -1,6 +1,7 @@
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from datetime import datetime
 import shutil
 
 
@@ -103,15 +104,16 @@ def organize_files(folder_path, file_types):
 
     files_moved = 0
     category_count = initialize_category_count(file_types)
+    log_entries = []
 
 
     for item in os.listdir(folder_path):
     
-        item_path = os.path.join(folder_path, item)                 # Create the complete path of the current item
+        item_path = os.path.join(folder_path, item)                             # Create the complete path of the current item
 
         if os.path.isfile(item_path):
         
-            file_name, extension = os.path.splitext(item)           # Split the filename into name and extension
+            file_name, extension = os.path.splitext(item)                       # Split the filename into name and extension
             extension = extension.lower()
         
             category = get_category(extension, file_types)                      # Get the category for the file based on its extension
@@ -132,16 +134,28 @@ def organize_files(folder_path, file_types):
                 print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
                 print()
 
+                log_entries.append(
+                    f"Renamed: {item} -> {os.path.basename(destination_path)}"
+                )
+
             try:                                                    # Move the file and continue even if one file causes an error
                 shutil.move(item_path, destination_path)
 
                 files_moved += 1
                 category_count[category] += 1
 
+                log_entries.append(
+                    f"Moved: {os.path.basename(destination_path)} -> {category}"
+                )
+
             except Exception as e:
                 print(f"Error moving {item}: {e}")
 
-    return files_moved, category_count
+                log_entries.append(
+                    f"Error moving {item}: {e}"
+                )
+
+    return files_moved, category_count, log_entries
 
 
 
@@ -157,6 +171,26 @@ def create_summary(category_count, files_moved):
     summary += f"\nTotal: {files_moved} file(s) moved."
 
     return summary
+
+
+
+def write_log_file(folder_path, log_entries, summary):
+
+    log_path = os.path.join(
+        folder_path,
+        "organizer_log.txt"
+    )
+
+    with open(log_path, "w", encoding="utf-8") as log_file:
+
+        log_file.write("Smart File Organizer Log\n")
+        log_file.write("=" * 30 + "\n\n")
+
+        for entry in log_entries:
+            log_file.write(entry + "\n")
+
+        log_file.write("\n")
+        log_file.write(summary)
 
 
 
@@ -189,13 +223,20 @@ def main():
     # Create category folders before moving files
     create_category_folders(folder_path, file_types)
 
-    files_moved, category_count = organize_files(folder_path, file_types)
+    files_moved, category_count, log_entries = organize_files(folder_path, file_types)
+    
 
     summary = create_summary(
         category_count,
         files_moved
     )
 
+    write_log_file(
+        folder_path,
+        log_entries,
+        summary
+    )
+    
     print("\n" + summary)
 
     messagebox.showinfo(                                            # Display the summary in a message box
