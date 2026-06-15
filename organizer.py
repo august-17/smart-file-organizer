@@ -8,18 +8,17 @@ root.withdraw()                                         # Hide the root window
 
 folder_path = filedialog.askdirectory()                 # Open a dialog to select a folder and store its path
 
+
+
 if not folder_path:
-    
-    messagebox.showwarning(
+    messagebox.showwarning(                             # Display a warning if no folder was selected
         "Smart File Organizer",
         "No folder selected."
     )
     exit()
 
-
 if not os.listdir(folder_path):
-
-    messagebox.showinfo(
+    messagebox.showinfo(                                # Display an info message if the selected folder is empty   
         "Smart File Organizer",
         "Selected folder is empty."
     )
@@ -28,8 +27,6 @@ if not os.listdir(folder_path):
 print("Selected:", folder_path)
 print("Organizing files...")
 print()
-
-
 
 
 
@@ -42,19 +39,18 @@ file_types = {
     "Others": []
 }
 
-# Create category folders if they don't exist
-for category in file_types:
-
-    folder_to_create = os.path.join(folder_path, category)
-
-    if not os.path.exists(folder_to_create):
-
-        os.mkdir(folder_to_create)
 
 
+def create_category_folders(folder_path):
 
+    # Create category folders if they don't exist
+    for category in file_types:
 
+        folder_to_create = os.path.join(folder_path, category)
 
+        if not os.path.exists(folder_to_create):
+
+            os.mkdir(folder_to_create)
 
 def get_category(extension):
 
@@ -69,7 +65,6 @@ def get_category(extension):
 
     return category
 
-
 def get_unique_destination(destination_folder, file_name, extension, item):
 
     destination_path = os.path.join(destination_folder, item)                   # Create the complete path of the destination file
@@ -81,11 +76,9 @@ def get_unique_destination(destination_folder, file_name, extension, item):
     while os.path.exists(destination_path):
 
         renamed = True
-
         print("File already exists:", os.path.basename(destination_path))
 
         new_name = f"{file_name}_{counter}{extension}"
-
         destination_path = os.path.join(destination_folder, new_name)
 
         print("Trying:", new_name)
@@ -95,14 +88,29 @@ def get_unique_destination(destination_folder, file_name, extension, item):
 
     return destination_path, renamed
 
+def create_summary(category_count, files_moved):
 
+    summary = "Organization complete!\n\n"                          # Create a summary of the organization results
+
+    for category, count in category_count.items():
+
+        if count > 0:
+            summary += f"{category}: {count}\n"
+
+    summary += f"\nTotal: {files_moved} file(s) moved."
+
+    return summary
+
+
+
+#Create category folders before moving files
+create_category_folders(folder_path)
 
 files_moved = 0
-
 category_count = {}
-
 for category in file_types:
     category_count[category] = 0
+
 
 
 for item in os.listdir(folder_path):
@@ -117,7 +125,6 @@ for item in os.listdir(folder_path):
         category = get_category(extension)                      # Get the category for the file based on its extension
 
         destination_folder = os.path.join(folder_path, category)
-        
         destination_path, renamed = get_unique_destination(
             destination_folder,
             file_name,
@@ -129,30 +136,24 @@ for item in os.listdir(folder_path):
             print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
             print()
 
-
         try:                                                    # Move the file and continue even if one file causes an error
-            
             shutil.move(item_path, destination_path)
             files_moved += 1
             category_count[category] += 1
 
         except Exception as e:
-            
             print(f"Error moving {item}: {e}")
 
 
-summary = "Organization complete!\n\n"
 
-for category, count in category_count.items():
-
-    if count > 0:
-        summary += f"{category}: {count}\n"
-
-summary += f"\nTotal: {files_moved} file(s) moved."
+summary = create_summary(
+    category_count,
+    files_moved
+)
 
 print("\n" + summary)
 
-messagebox.showinfo(
+messagebox.showinfo(                                            # Display the summary in a message box
     "Smart File Organizer",
     summary
 )
