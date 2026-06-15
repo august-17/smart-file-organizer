@@ -3,31 +3,6 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 import shutil
 
-root = tk.Tk()                                          # Create the root window
-root.withdraw()                                         # Hide the root window
-
-folder_path = filedialog.askdirectory()                 # Open a dialog to select a folder and store its path
-
-
-
-if not folder_path:
-    messagebox.showwarning(                             # Display a warning if no folder was selected
-        "Smart File Organizer",
-        "No folder selected."
-    )
-    exit()
-
-if not os.listdir(folder_path):
-    messagebox.showinfo(                                # Display an info message if the selected folder is empty   
-        "Smart File Organizer",
-        "Selected folder is empty."
-    )
-    exit()
-
-print("Selected:", folder_path)
-print("Organizing files...")
-print()
-
 
 
 file_types = {
@@ -52,6 +27,8 @@ def create_category_folders(folder_path):
 
             os.mkdir(folder_to_create)
 
+
+
 def get_category(extension):
 
     category = "Others"
@@ -64,6 +41,8 @@ def get_category(extension):
             break
 
     return category
+
+
 
 def get_unique_destination(destination_folder, file_name, extension, item):
 
@@ -88,6 +67,8 @@ def get_unique_destination(destination_folder, file_name, extension, item):
 
     return destination_path, renamed
 
+
+
 def create_summary(category_count, files_moved):
 
     summary = "Organization complete!\n\n"                          # Create a summary of the organization results
@@ -103,57 +84,94 @@ def create_summary(category_count, files_moved):
 
 
 
-#Create category folders before moving files
-create_category_folders(folder_path)
+def main():
 
-files_moved = 0
-category_count = {}
-for category in file_types:
-    category_count[category] = 0
+    root = tk.Tk()                                          # Create the root window
+    root.withdraw()                                         # Hide the root window
 
+    folder_path = filedialog.askdirectory()                 # Open a dialog to select a folder and store its path
 
 
-for item in os.listdir(folder_path):
+
+    if not folder_path:
+        messagebox.showwarning(                             # Display a warning if no folder was selected
+            "Smart File Organizer",
+            "No folder selected."
+        )
+        exit()
+
+    if not os.listdir(folder_path):
+        messagebox.showinfo(                                # Display an info message if the selected folder is empty   
+            "Smart File Organizer",
+            "Selected folder is empty."
+        )
+        exit()
+
+    print("Selected:", folder_path)
+    print("Organizing files...")
+    print()
+
+
+
+    #Create category folders before moving files
+    create_category_folders(folder_path)
+
+    files_moved = 0
+    category_count = {}
+    category_count = {
+        category: 0
+        for category in file_types
+    }
+
+
+
+    for item in os.listdir(folder_path):
     
-    item_path = os.path.join(folder_path, item)                 # Create the complete path of the current item
+        item_path = os.path.join(folder_path, item)                 # Create the complete path of the current item
 
-    if os.path.isfile(item_path):
+        if os.path.isfile(item_path):
         
-        file_name, extension = os.path.splitext(item)           # Split the filename into name and extension
-        extension = extension.lower()
+            file_name, extension = os.path.splitext(item)           # Split the filename into name and extension
+            extension = extension.lower()
         
-        category = get_category(extension)                      # Get the category for the file based on its extension
+            category = get_category(extension)                      # Get the category for the file based on its extension
 
-        destination_folder = os.path.join(folder_path, category)
-        destination_path, renamed = get_unique_destination(
-            destination_folder,
-            file_name,
-            extension,
-            item)
+            destination_folder = os.path.join(folder_path, category)
+            destination_path, renamed = get_unique_destination(
+                destination_folder,
+                file_name,
+                extension,
+                item
+            )
 
-        if renamed:                                             # Display the final renamed filename if a duplicate was found
+            if renamed:                                             # Display the final renamed filename if a duplicate was found
             
-            print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
-            print()
+                print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
+                print()
 
-        try:                                                    # Move the file and continue even if one file causes an error
-            shutil.move(item_path, destination_path)
-            files_moved += 1
-            category_count[category] += 1
+            try:                                                    # Move the file and continue even if one file causes an error
+                shutil.move(item_path, destination_path)
+                files_moved += 1
+                category_count[category] += 1
 
-        except Exception as e:
-            print(f"Error moving {item}: {e}")
+            except Exception as e:
+                print(f"Error moving {item}: {e}")
 
 
 
-summary = create_summary(
-    category_count,
-    files_moved
-)
+    summary = create_summary(
+        category_count,
+        files_moved
+    )
 
-print("\n" + summary)
+    print("\n" + summary)
 
-messagebox.showinfo(                                            # Display the summary in a message box
-    "Smart File Organizer",
-    summary
-)
+    messagebox.showinfo(                                            # Display the summary in a message box
+        "Smart File Organizer",
+        summary
+    )
+
+
+
+if __name__ == "__main__":
+    main()
