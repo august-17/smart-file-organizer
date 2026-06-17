@@ -1,6 +1,6 @@
 import os
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from datetime import datetime
 import shutil
 
@@ -21,7 +21,7 @@ file_types = {
     "Images": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"],
     "Documents": [".pdf", ".txt", ".docx", ".doc", ".xlsx", ".ppt", ".pptx", ".csv"],
     "Videos": [".mp4", ".mkv", ".avi", ".mov", ".webm"],
-    "Audio": [".mp3", ".wav", ".aac", ".m4a"],
+    "Audio": [".mp3", ".wav", ".aac", ".m4a", ".aiff"],
     "Archives": [".zip", ".rar", ".tar", ".gz", ".7z", ".tar.gz", ".tar.bz2", ".tar.xz"],
     "Code": [".py", ".java", ".class", ".cpp", ".hpp", ".c", ".h", ".js", ".jsx", ".html", ".css", ".json", ".xml", ".yml", ".yaml", ".ts", ".tsx", ".go", ".rb", ".php", ".jar", ".ipynb", ".mat", ".sql", ".r", ".swift", ".cs", ".rs", ".kt", ".scala", ".lua", ".vue"],
     "Executables": [".exe", ".msi", ".bat", ".sh", ".app", ".apk", ".dmg", ".cmd", ".com", ".bin"],
@@ -126,9 +126,52 @@ def print_messages(messages):
 
 
 
-def organize_files(folder_path, file_types, organize_subfolders):
+def count_files(folder_path, file_types, organize_subfolders):
+
+    total_files = 0
+
+    if organize_subfolders:
+
+        for current_folder, subfolders, _ in os.walk(folder_path):
+
+            subfolders[:] = [
+                folder
+                for folder in subfolders
+                if folder not in file_types
+            ]
+
+            for item in os.listdir(current_folder):
+
+                item_path = os.path.join(current_folder, item)
+
+                if (
+                    os.path.isfile(item_path)
+                    and not item.startswith(LOG_FILE_PREFIX)
+                ):
+                    total_files += 1
+
+    else:
+
+        for item in os.listdir(folder_path):
+
+            item_path = os.path.join(folder_path, item)
+
+            if (
+                os.path.isfile(item_path)
+                and not item.startswith(LOG_FILE_PREFIX)
+            ):
+                total_files += 1
+
+    return total_files
+
+
+
+def organize_files(folder_path, file_types, organize_subfolders, total_files,
+        progress_window, progress_bar, progress_label
+):
 
     files_moved = 0
+    processed_files = 0
     category_count = initialize_category_count(file_types)
     log_entries = []
 
@@ -197,6 +240,15 @@ def organize_files(folder_path, file_types, organize_subfolders):
 
                     files_moved += 1
                     category_count[category] += 1
+                    processed_files += 1
+
+                    progress_bar["value"] = processed_files
+
+                    progress_label.config(
+                         text=f"Processing file {processed_files} of {total_files}"
+                    )
+
+                    progress_window.update()
 
                     log_entries.append(
                         f"Moved: {relative_source} -> {relative_destination}"
@@ -210,6 +262,33 @@ def organize_files(folder_path, file_types, organize_subfolders):
                     )
 
     return files_moved, category_count, log_entries
+
+
+
+def create_progress_window():
+
+    progress_window = tk.Toplevel()
+
+    progress_window.title("Smart File Organizer")
+    progress_window.geometry("400x120")
+    progress_window.resizable(False, False)
+
+    progress_label = tk.Label(
+        progress_window,
+        text="Preparing..."
+    )
+    progress_label.pack(pady=10)
+
+    progress_bar = ttk.Progressbar(
+        progress_window,
+        length=300,
+        mode="determinate"
+    )
+    progress_bar.pack(pady=10)
+
+    progress_window.update()
+
+    return progress_window, progress_bar, progress_label
 
 
 
@@ -369,9 +448,9 @@ def main():
             "Do you want to organize files inside subfolders as well?"
         )
 
-    files_moved, category_count, log_entries = organize_files(folder_path, file_types, organize_subfolders)
+    total_files = count_files(folder_path, file_types, organize_subfolders)
 
-    if files_moved == 0:
+    if total_files == 0:
         message = "No files found to organize."
         print("\n" + message)
 
@@ -381,6 +460,16 @@ def main():
         )
         return
     
+    progress_window, progress_bar, progress_label = create_progress_window()
+
+    progress_bar["maximum"] = total_files
+
+    files_moved, category_count, log_entries = organize_files(folder_path, file_types, organize_subfolders,
+            total_files, progress_window, progress_bar, progress_label
+    )
+
+    progress_window.destroy()
+
 
     summary = create_summary(category_count, files_moved)
 
