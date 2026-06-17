@@ -215,7 +215,7 @@ def organize_files(folder_path, file_types, organize_subfolders):
 
 def create_summary(category_count, files_moved):
 
-    summary = "Organization complete!\n\n"                          # Create a summary of the organization results
+    summary = ""                                            # Create a summary of the organization results
 
     for category, count in category_count.items():
 
@@ -225,6 +225,81 @@ def create_summary(category_count, files_moved):
     summary += f"\nTotal: {files_moved} file(s) moved."
 
     return summary
+
+
+
+def show_summary_window(summary, log_path):
+
+    summary_window = tk.Toplevel()
+
+    summary_window.title("Smart File Organizer")
+    summary_window.geometry("500x400")
+    summary_window.resizable(False, False)
+
+    # Heading
+    title_label = tk.Label(
+        summary_window,
+        text="✔ Organization Complete",
+        font=("Arial", 16, "bold")
+    )
+    title_label.pack(pady=15)
+
+    # Summary Frame
+    summary_frame = tk.Frame(summary_window)
+    summary_frame.pack(fill="both", expand=True, padx=20)
+
+    summary_label = tk.Label(
+        summary_frame,
+        text=summary,
+        justify="left",
+        anchor="w",
+        font=("Consolas", 11)
+    )
+    summary_label.pack(anchor="w")
+
+    # Log Information
+    info_label = tk.Label(
+        summary_window,
+        text="Log file created:",
+        font=("Arial", 9)
+    )
+    info_label.pack(pady=(10, 0))
+
+    log_link = tk.Label(
+        summary_window,
+        text=os.path.basename(log_path),
+        font=("Arial", 10, "underline"),
+        fg="blue",
+        cursor="hand2"
+    )
+
+    log_link.pack()
+
+    log_link.bind(
+        "<Button-1>",
+        lambda event: os.startfile(log_path)
+    )
+
+    # Button Frame
+    button_frame = tk.Frame(summary_window)
+    button_frame.pack(pady=10)
+
+    open_log_button = tk.Button(
+        button_frame,
+        text="Open Log Folder",
+        command=lambda: os.startfile(os.path.dirname(log_path))
+    )
+    open_log_button.pack(side="left", padx=5)
+
+    close_button = tk.Button(
+        button_frame,
+        text="Close",
+        command=summary_window.destroy
+    )
+    close_button.pack(side="left", padx=5)
+
+    summary_window.grab_set()
+    summary_window.wait_window()
 
 
 
@@ -247,6 +322,8 @@ def write_log_file(folder_path, log_entries, summary):
 
         log_file.write("\n")
         log_file.write(summary)
+
+    return log_path
 
 
 
@@ -299,14 +376,11 @@ def main():
 
     summary = create_summary(category_count, files_moved)
 
-    write_log_file(folder_path, log_entries, summary)
+    log_path = write_log_file(folder_path, log_entries, summary)
     
     print("\n" + summary)
 
-    messagebox.showinfo(                                            # Display the summary in a message box
-        "Smart File Organizer",
-        summary
-    )
+    show_summary_window(summary, log_path)                          # Display the summary in a new window
 
 
 
