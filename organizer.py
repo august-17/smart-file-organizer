@@ -167,10 +167,8 @@ def organize_files(folder_path, file_types, organize_subfolders):
 
     for current_folder in folders_to_process:
 
-        create_category_folders(
-            current_folder,
-            file_types
-        )
+        create_category_folders(current_folder, file_types)
+
         for item in os.listdir(current_folder):
 
             # Skip organizer log files
@@ -188,23 +186,24 @@ def organize_files(folder_path, file_types, organize_subfolders):
 
                 destination_folder = os.path.join(current_folder, category)
 
-                destination_path, renamed, messages = get_unique_destination(
-                    destination_folder,
-                    file_name,
-                    extension,
-                    item
-                )
+                destination_path, renamed, messages = get_unique_destination(destination_folder, file_name, extension, item)
+
+                relative_source = os.path.relpath(item_path, folder_path)
+
+                relative_destination = os.path.relpath(destination_path, folder_path)
 
                 print_messages(messages)
 
+
                 if renamed:                                             # Display the final renamed filename if a duplicate was found
-            
+                
                     print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
                     print()
 
                     log_entries.append(
-                        f"Renamed: {item} -> {os.path.basename(destination_path)}"
+                        f"Renamed: {relative_source} -> {relative_destination}"
                     )
+                
 
                 try:                                                    # Move the file and continue even if one file causes an error
                     shutil.move(item_path, destination_path)
@@ -213,7 +212,7 @@ def organize_files(folder_path, file_types, organize_subfolders):
                     category_count[category] += 1
 
                     log_entries.append(
-                        f"Moved: {os.path.basename(destination_path)} -> {category}"
+                        f"Moved: {relative_source} -> {relative_destination}"
                     )
 
                 except Exception as e:
@@ -298,10 +297,6 @@ def main():
             "Do you want to organize files inside subfolders as well?"
         )
 
-
-    # Create category folders before moving files
-    create_category_folders(folder_path, file_types)
-
     files_moved, category_count, log_entries = organize_files(folder_path, file_types, organize_subfolders)
 
     if files_moved == 0:
@@ -315,16 +310,9 @@ def main():
         return
     
 
-    summary = create_summary(
-        category_count,
-        files_moved
-    )
+    summary = create_summary(category_count, files_moved)
 
-    write_log_file(
-        folder_path,
-        log_entries,
-        summary
-    )
+    write_log_file(folder_path, log_entries, summary)
     
     print("\n" + summary)
 
