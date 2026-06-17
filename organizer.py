@@ -20,7 +20,7 @@ def create_hidden_root():
 
 file_types = {
     "Images": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"],
-    "Documents": [".pdf", ".txt", ".docx", ".doc", ".xlsx", ".pptx", ".csv"],
+    "Documents": [".pdf", ".txt", ".docx", ".doc", ".xlsx", ".ppt", ".pptx", ".csv"],
     "Videos": [".mp4", ".mkv", ".avi", ".mov", ".webm"],
     "Audio": [".mp3", ".wav", ".aac", ".m4a"],
     "Archives": [".zip", ".rar", ".tar", ".gz", ".7z", ".tar.gz", ".tar.bz2", ".tar.xz"],
@@ -28,6 +28,24 @@ file_types = {
     "Executables": [".exe", ".msi", ".bat", ".sh", ".app", ".apk", ".dmg", ".cmd", ".com", ".bin"],
     "Others": []
 }
+
+
+
+def has_subfolders(folder_path, file_types):
+
+    for item in os.listdir(folder_path):
+
+        item_path = os.path.join(folder_path, item)
+
+        if os.path.isdir(item_path):
+
+            # Ignore organizer category folders
+            if item in file_types:
+                continue
+
+            return True
+
+    return False
 
 
 
@@ -122,64 +140,88 @@ def print_messages(messages):
 
 
 
-def organize_files(folder_path, file_types):
+def organize_files(folder_path, file_types, organize_subfolders):
 
     files_moved = 0
     category_count = initialize_category_count(file_types)
     log_entries = []
 
 
-    for item in os.listdir(folder_path):
+    if organize_subfolders:
+        folders_to_process = []
 
-        # Skip organizer log files
-        if item.startswith(LOG_FILE_PREFIX):
-            continue
+        for current_folder, subfolders, files in os.walk(folder_path):
+
+            # Skip organizer category folders
+            subfolders[:] = [
+            folder
+            for folder in subfolders
+            if folder not in file_types
+            ]
+
+            folders_to_process.append(current_folder)
+
+    else:
+        folders_to_process = [folder_path]
+
+
+    for current_folder in folders_to_process:
+
+        create_category_folders(
+            current_folder,
+            file_types
+        )
+        for item in os.listdir(current_folder):
+
+            # Skip organizer log files
+            if item.startswith(LOG_FILE_PREFIX):
+                continue
     
-        item_path = os.path.join(folder_path, item)                             # Create the complete path of the current item
+            item_path = os.path.join(current_folder, item)                             # Create the complete path of the current item
 
-        if os.path.isfile(item_path):
+            if os.path.isfile(item_path):
         
-            file_name, extension = get_file_extension(item)                     # Split the filename into name and extension
-            extension = extension.lower()
+                file_name, extension = get_file_extension(item)                     # Split the filename into name and extension
+                extension = extension.lower()
         
-            category = get_category(extension, file_types)                      # Get the category for the file based on its extension
+                category = get_category(extension, file_types)                      # Get the category for the file based on its extension
 
-            destination_folder = os.path.join(folder_path, category)
+                destination_folder = os.path.join(current_folder, category)
 
-            destination_path, renamed, messages = get_unique_destination(
-                destination_folder,
-                file_name,
-                extension,
-                item
-            )
+                destination_path, renamed, messages = get_unique_destination(
+                    destination_folder,
+                    file_name,
+                    extension,
+                    item
+                )
 
-            print_messages(messages)
+                print_messages(messages)
 
-            if renamed:                                             # Display the final renamed filename if a duplicate was found
+                if renamed:                                             # Display the final renamed filename if a duplicate was found
             
-                print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
-                print()
+                    print(f"Renamed: {item} -> {os.path.basename(destination_path)}")
+                    print()
 
-                log_entries.append(
-                    f"Renamed: {item} -> {os.path.basename(destination_path)}"
-                )
+                    log_entries.append(
+                        f"Renamed: {item} -> {os.path.basename(destination_path)}"
+                    )
 
-            try:                                                    # Move the file and continue even if one file causes an error
-                shutil.move(item_path, destination_path)
+                try:                                                    # Move the file and continue even if one file causes an error
+                    shutil.move(item_path, destination_path)
 
-                files_moved += 1
-                category_count[category] += 1
+                    files_moved += 1
+                    category_count[category] += 1
 
-                log_entries.append(
-                    f"Moved: {os.path.basename(destination_path)} -> {category}"
-                )
+                    log_entries.append(
+                        f"Moved: {os.path.basename(destination_path)} -> {category}"
+                    )
 
-            except Exception as e:
-                print(f"Error moving {item}: {e}")
+                except Exception as e:
+                    print(f"Error moving {item}: {e}")
 
-                log_entries.append(
-                    f"Error moving {item}: {e}"
-                )
+                    log_entries.append(
+                        f"Error moving {item}: {e}"
+                    )
 
     return files_moved, category_count, log_entries
 
@@ -247,11 +289,20 @@ def main():
     print("Organizing files...")
     print()
 
+    organize_subfolders = False
+
+    if has_subfolders(folder_path, file_types):
+
+        organize_subfolders = messagebox.askyesno(
+            "Smart File Organizer",
+            "Do you want to organize files inside subfolders as well?"
+        )
+
 
     # Create category folders before moving files
     create_category_folders(folder_path, file_types)
 
-    files_moved, category_count, log_entries = organize_files(folder_path, file_types)
+    files_moved, category_count, log_entries = organize_files(folder_path, file_types, organize_subfolders)
 
     if files_moved == 0:
         message = "No files found to organize."
