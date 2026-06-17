@@ -347,6 +347,14 @@ def main():
             "Selected folder is empty."
         )
         return
+    
+    confirm = messagebox.askyesno(
+        "Smart File Organizer",
+        f"Selected Folder:\n{folder_path}\n\nOrganize now?"
+    )
+
+    if not confirm:
+        return
 
     print("Selected:", folder_path)
     print("Organizing files...")
