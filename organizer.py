@@ -15,7 +15,6 @@ def create_hidden_root():
     root = tk.Tk()                          # Create the root window
     root.withdraw()                         # Hide the root window
 
-    return root
 
 
 file_types = {
@@ -46,19 +45,6 @@ def has_subfolders(folder_path, file_types):
             return True
 
     return False
-
-
-
-def create_category_folders(folder_path, file_types):
-
-    # Create category folders if they don't exist
-    for category in file_types:
-
-        folder_to_create = os.path.join(folder_path, category)
-
-        if not os.path.exists(folder_to_create):
-
-            os.mkdir(folder_to_create)
 
 
 
@@ -167,8 +153,6 @@ def organize_files(folder_path, file_types, organize_subfolders):
 
     for current_folder in folders_to_process:
 
-        create_category_folders(current_folder, file_types)
-
         for item in os.listdir(current_folder):
 
             # Skip organizer log files
@@ -185,6 +169,9 @@ def organize_files(folder_path, file_types, organize_subfolders):
                 category = get_category(extension, file_types)                      # Get the category for the file based on its extension
 
                 destination_folder = os.path.join(current_folder, category)
+
+                if not os.path.exists(destination_folder):
+                    os.mkdir(destination_folder)
 
                 destination_path, renamed, messages = get_unique_destination(destination_folder, file_name, extension, item)
 
