@@ -8,15 +8,6 @@ LOG_FILE_PREFIX = "organizer_log_"
 
 MULTI_EXTENSIONS = [".tar.gz", ".tar.bz2", ".tar.xz"]
 
-
-
-def create_hidden_root():
-
-    root = tk.Tk()                          # Create the root window
-    root.withdraw()                         # Hide the root window
-
-
-
 file_types = {
     "Images": [".jpg", ".jpeg", ".png", ".gif", ".webp", ".avif"],
     "Documents": [".pdf", ".txt", ".docx", ".doc", ".xlsx", ".ppt", ".pptx", ".csv"],
@@ -27,6 +18,13 @@ file_types = {
     "Executables": [".exe", ".msi", ".bat", ".sh", ".app", ".apk", ".dmg", ".cmd", ".com", ".bin"],
     "Others": []
 }
+
+
+
+def create_hidden_root():
+
+    root = tk.Tk()                          # Create the root window
+    root.withdraw()                         # Hide the root window
 
 
 
